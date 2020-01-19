@@ -5,7 +5,7 @@ languageCode = "en"
 DefaultContentLanguage = "en"
 enableInlineShortcodes = true
 footnoteReturnLinkContents = "^"
-googleAnalytics = "UA-XXXX"
+googleAnalytics = "UA-156490903-1"
 DisqusShortname = ""
 theme = "chunky-poster"
 
