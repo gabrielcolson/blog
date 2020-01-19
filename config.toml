@@ -1,4 +1,4 @@
-baseURL = "https://example.com"
+baseURL = "https://gabrielcolson.fr"
 title = "Gabriel Colson"
 paginate = 2
 languageCode = "en"
@@ -24,8 +24,8 @@ theme = "chunky-poster"
 
   [params.social]
     rss = true
-    linkedin = "https://linkedin.com"
-    github = "https://github.com"
+    linkedin = "https://www.linkedin.com/in/gabriel-colson/"
+    github = "https://github.com/gabrielcolson"
 
   [params.prismJS]
     enable = true
