@@ -8,14 +8,16 @@ summary: "A workshop where we build a GraphQL API using the Prisma Framework"
 
 # Introduction
 
-This Workshop aims to introduce you to [Prisma 2](https://github.com/prisma/primsa2)
+This Workshop aims to introduce you to [Prisma 2](https://github.com/prisma/prisma2)
 aka the Prisma Framework.
 
-Prisma is divided in 2 components:
+Prisma is divided in 3 components:
 - [Lift](https://lift.prisma.io/): a declarative data modeling language
 and a migration system.
 - [Photon](https://photonjs.prisma.io/): a type-safe and auto-generated
 database client.
+- [Studio](https://github.com/prisma/studio): an admin UI to support various database
+workflows.
 
 If you didn't understand everything don't worry: you will before the end
 of this workshop!
@@ -169,7 +171,8 @@ You should now have your first GraphQL API up and running!
 
 ## Mutations and parameters
 
-You can read some data from our API but we still can't write some. Let's fix that!
+We can read some data from our API but we still can't write anything to it. Let's fix
+that!
 
 Read the next page of the `ApolloServer`'s docs.
 
@@ -205,3 +208,73 @@ $ npm run dev
 
 
 # Linking Prisma and GraphQL
+
+To access Prisma in our GraphQL API we need to pass down the Photon instance to our
+resolvers. Apollo have a great way to do so through the `Context` object.
+
+As you saw earlier, a resolver can take at least 2 arguments:
+*  `parent` or `obj`: The result of the resolver of the parent field (I personally never used it).
+* `args`: the arguments of your resolver.
+
+But there is a third which is `context` (that I like to call `ctx`).
+
+As you can see [here](https://www.apollographql.com/docs/apollo-server/data/data/#context-argument),
+the `context` object is where we can store various information about the current query and our
+global connection to other services, like a database. To use our Photon instance to our resolvers
+we just have to tell `ApolloServer` add it to the context:
+
+```typescript
+// src/index.ts
+import { Photon } from '@prisma/photon';
+
+const photon = new Photon();
+
+interface Context {
+  photon: Photon;
+}
+
+function createContext(): Context {
+  return {
+    photon,
+  };
+}
+
+// ...
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: createContext,
+});
+
+// ...
+```
+
+Great! Now or resolvers should looks like this:
+```typescript
+function(parent, args, ctx)
+```
+
+Or, if you just want your Photon instance, like this:
+```typescript
+function(parent, args, { photon })
+```
+
+Now you can use your previously acquired photon knowledge to read and write from the database
+in the `users` and `createUser` resolvers.
+
+To see if it works, try to create a user from your GraphQL API and see if it appeared in
+Prisma Studio.
+
+# Nexus
+
+Even if writing a GraphQL schema looks simple for now, I can tell you it doesn't scale well for
+several reasons:
+
+1. Having the whole schema in a string is hard to read/write.
+2. No type safety in the resolvers.
+3. No auto-completion for the schema or the resolvers.
+
+The Prisma team saw that and created a tool called [GraphQL Nexus](https://nexus.js.org).
+This library allows you to define your GraphQL schema in TypeScript and generate the correct
+types for your resolvers.
