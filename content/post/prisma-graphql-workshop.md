@@ -12,11 +12,11 @@ This Workshop aims to introduce you to [Prisma 2](https://github.com/prisma/pris
 aka the Prisma Framework.
 
 Prisma is divided in 3 components:
-* [Lift](https://lift.prisma.io/): a declarative data modeling language
-and a migration system.
-* [Photon](https://photonjs.prisma.io/): a type-safe and auto-generated
+1. [Photon](https://photonjs.prisma.io/): a type-safe and auto-generated
 database client.
-* [Studio](https://github.com/prisma/studio): an admin UI to support various database
+3. [Lift](https://lift.prisma.io/): a declarative data modeling language
+and a migration system.
+3. [Studio](https://github.com/prisma/studio): an admin UI to support various database
 workflows.
 
 If you didn't understand everything don't worry: you will before the end
