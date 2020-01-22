@@ -211,8 +211,9 @@ To access Prisma in our GraphQL API we need to pass down the Photon instance to 
 resolvers. Apollo have a great way to do so through the `Context` object.
 
 As you saw earlier, a resolver can take at least 2 arguments:
-* `parent` or `obj`: The result of the resolver of the parent field (I personally never used it).
-* `args`: the arguments of your resolver.
+
+1. `parent`: The result of the resolver of the parent field (I personally never used it).
+2. `args`: the arguments of your resolver.
 
 But there is a third which is `context` (that I like to call `ctx`).
 
