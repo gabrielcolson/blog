@@ -1,5 +1,5 @@
 ---
-title: "Prisma Graphql Workshop"
+title: "Workshop: Prisma and Graphql"
 date: 2020-01-19T03:10:32+01:00
 draft: false
 images: ["prisma-workshop/prisma.jpg"]
@@ -266,15 +266,116 @@ in the `users` and `createUser` resolvers.
 To see if it works, try to create a user from your GraphQL API and see if it appeared in
 Prisma Studio.
 
+
 # Nexus
 
 Even if writing a GraphQL schema looks simple for now, I can tell you it doesn't scale well for
 several reasons:
 
-1. Having the whole schema in a string is hard to read/write.
+1. Having the whole schema in a string is hard to maintain.
 2. No type safety in the resolvers.
-3. No auto-completion for the schema or the resolvers.
+3. No auto-completion for the schema and the resolvers.
 
 The Prisma team saw that and created a tool called [GraphQL Nexus](https://nexus.js.org).
 This library allows you to define your GraphQL schema in TypeScript and generate the correct
 types for your resolvers.
+
+Go through the Nexus [Getting Started](https://nexus.js.org/docs/getting-started) and install it
+with `npm install nexus`. We will now rewrite our schema with the Nexus types.
+
+
+## Generate the GraphQL schema with Nexus
+
+First, define a `User` type with the `objectType` function. Give it an `email` and
+`password` field. Then, recreate the `Query` and `Mutation` types with the `queryType`
+ and `mutationType` functions.
+
+Move the resolvers to their respective Nexus type on the resolve attribute. Here is how I
+did it with the `Query` type.
+
+```typescript
+// src/index.ts
+
+// ...
+
+const User = objectType({
+  // ...
+});
+
+const Query = queryType({
+  definition(t) {
+    t.list.field('users', {
+      type: User,
+      resolve: (parent, args, ctx) => ctx.photon.users.findMany(),
+    });
+    },
+});
+
+const Mutation = mutationType({
+  // ...
+});
+
+const schema = makeSchema({
+  types: [User, Query, Mutation],
+});
+
+const server = new ApolloServer({
+  schema,
+  context: createContext,
+});
+
+// ...
+```
+
+If you go to the GraphQL Playground (ensure first your server is running), in the schema tab,
+you should see the exact same schema we have defined without Nexus:
+
+```graphql
+type Mutation {
+  createUser(email: String!, password: String!): User!
+}
+​
+type Query {
+  users: [User!]!
+}
+​
+type User {
+  email: String!
+  password: String!
+}
+```
+
+
+## Nexus output
+
+If you look at the logs of your server, you might see this warning:
+
+```
+You should specify a configuration value for outputs in Nexus' makeSchema.
+Provide one to remove this warning.
+```
+
+Having Nexus generate files for the GraphQL schema and the generated types can be very useful
+when developing. Let's setup this:
+
+```typescript
+const schema = makeSchema({
+  types: [User, Query, Mutation],
+  outputs: {
+    schema: `${__dirname}/../schema.graphql`,
+    typegen: `${__dirname}/generated/nexus.ts`
+  },
+});
+```
+
+Nexus author advise that we commit the `schema.graphql` file even if it is generated
+because it could be useful to see how the resulting API is evolving through the versions
+of our application.
+
+The `nexus.ts` file containing the TypeScript typegen can however be added to the `.gitignore`.
+
+
+## Nexus-Prisma
+
+
+## Deploy to Heroku
