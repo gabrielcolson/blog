@@ -12,12 +12,10 @@ This Workshop aims to introduce you to [Prisma 2](https://github.com/prisma/pris
 aka the Prisma Framework.
 
 Prisma is divided in 3 components:
-1. [Photon](https://photonjs.prisma.io/): a type-safe and auto-generated
-database client.
-3. [Lift](https://lift.prisma.io/): a declarative data modeling language
-and a migration system.
-3. [Studio](https://github.com/prisma/studio): an admin UI to support various database
-workflows.
+
+1. [Photon](https://photonjs.prisma.io/): a type-safe and auto-generated database client.
+3. [Lift](https://lift.prisma.io/): a declarative data modeling language and a migration system.
+3. [Studio](https://github.com/prisma/studio): an admin UI to support various database workflows.
 
 If you didn't understand everything don't worry: you will before the end
 of this workshop!
@@ -213,7 +211,7 @@ To access Prisma in our GraphQL API we need to pass down the Photon instance to 
 resolvers. Apollo have a great way to do so through the `Context` object.
 
 As you saw earlier, a resolver can take at least 2 arguments:
-*  `parent` or `obj`: The result of the resolver of the parent field (I personally never used it).
+* `parent` or `obj`: The result of the resolver of the parent field (I personally never used it).
 * `args`: the arguments of your resolver.
 
 But there is a third which is `context` (that I like to call `ctx`).
