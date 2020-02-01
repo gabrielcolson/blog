@@ -13,14 +13,14 @@ aka the Prisma Framework.
 
 Prisma is divided in 3 components:
 
-1. [Photon](https://photonjs.prisma.io/): a type-safe and auto-generated database client.
-3. [Lift](https://lift.prisma.io/): a declarative data modeling language and a migration system.
+1. [Client](https://github.com/prisma/prisma-client-js): a type-safe and auto-generated database client.
+3. [Migrate](https://github.com/prisma/migrate): a declarative data modeling language and a migration system.
 3. [Studio](https://github.com/prisma/studio): an admin UI to support various database workflows.
 
-If you didn't understand everything don't worry: you will before the end
+If you don't understand everything don't worry: you will before the end
 of this workshop!
 
-Just in case, open the [prisma2 doc](https://github.com/prisma/prisma2/tree/master/docs),
+Just in case, open the [Prisma2 doc](https://github.com/prisma/prisma2/tree/master/docs),
 it may help!
 
 
@@ -45,43 +45,46 @@ Nice! We're ready to start! We can now create or project with the Prisma CLI.
 
 ````bash
 $ npx prisma2 init prisma-workshop
+$ cd prisma-workshop
 ````
 
-Create a *blank project*, chose *PostgreSQL* and enter your local database URL:
-
+Delete the content of `prisma/schema.prisma` and replace it with
 ```
-postgresql://postgres:postgres@localhost:5432/postgres?schema=public
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@localhost:5432/postgres?schema=public"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id String @id @default(cuid())
+}
 ```
 
-Then, select the TypeScript option.
+It tells prisma that we are using a PostgreSQL database, on which URL it is located and
+that we use the JavaScript client.
 
-You should now have a `prisma-workshop` directory with an example `prisma/scheam.prisma`.
-Open it and delete the 2 example models (User and Post).
+We also added an example model called `User` which have an `id` field.
 
-
-Now we will have to setup a Node.js project.
+Now we will have to setup a Node.js project and to install some dependencies.
 
 ```bash
-$ cd prisma-workshop && npm init -y
-```
-
-We need to install the prisma2 cli, TypeScript and some other tools:
-
-```bash
-$ npm install --save-dev prisma2 typescript ts-node ts-node-dev @prisma/sdk
-$ npm install --save @prisma/photon
+$ npm init -y
+$ npm install --save-dev prisma2 typescript ts-node
+$ tsc --init --target es2018
+$ npm install --save @prisma/client
 ```
 
 Open a new terminal in the same directory and run the prisma watcher:
 
 ```bash
-$ npx prisma2 dev
+$ npx prisma2 generate --watch
 ```
 
-This will watch our `schema.prisma`. When it changes, prisma applies the modifications
-to our database and regenerates Photon. It will also expose the
-[Prisma Studio](http://localhost:5555/) endpoint which is basically a UI over your database
-which allow you to read and write your data. Very useful indeed!
+This will watch our `schema.prisma`. When it changes, prisma regenerates the Client.
 
 Add a `start` script to the `package.json`:
 
@@ -97,14 +100,14 @@ Create our source file:
 
 ```typescript
 // src/index.ts
-import { Photon } from '@prisma/photon';
+import { PrismaClient } from '@prisma/client';
 
-const photon = new Photon();
+const prisma = new PrismaClient();
 
 async function main() {
-  await photon.connect();
+  await prisma.connect();
 
-  await photon.disconnect();
+  await prisma.disconnect();
 }
 
 main();
@@ -114,25 +117,35 @@ You can type `npm start`. If nothing happens, it works! If something does happen
 you probably missed something and should step back to see what.
 
 
-# Introducing Photon
+# Introducing the Prisma Client
 
-Time to put you at work! I want you to familiarize yourself with Photon and the
-Prisma Language.
+Time to put you at work! I want you to familiarize yourself with the Prisma Client
+and the Prisma Language.
 
 Go through the [docs](https://github.com/prisma/prisma2/tree/master/docs)
 and find out how to add models to your `schema.prisma`. We need a User model which have
 an id (cuid string), a unique email and a password.
 
+Once you wrote your model, you have to apply the changes to the database. To do so run
+the following commands:
+
+```bash
+$ npx prisma2 migrate save --name add_user_model --experimental
+$ npx prisma2 migrate up --experimental
+```
+
+We just created a migration an applied it to our database.
+
 Your script (`src/index.ts`) must create 3 users, update the email of one, delete
 another, fetch them all and display them.
 
-*⚠️: if you need to clear your database, go to the [Prisma Studio](http://localhost:5555/)
-and delete the users.*
+*⚠️: if you need to clear your database, run `npx prisma2 studio --experimental`, go to
+the [Prisma Studio](http://localhost:5555/) and delete the users.*
 
 
 # Introducing GraphQL
 
-Now that you played a bit with Photon, we can create our first GraphQL server. Before we
+Now that you played a bit with the Client, we can create our first GraphQL server. Before we
 proceed, I invite you to read what is [GraphQL](https://graphql.org/).
 
 Theory is cool, but practice is cooler! Go to the
@@ -201,40 +214,41 @@ development.
 ```
 
 ```bash
+$ npm install --save-dev ts-node-dev
 $ npm run dev
 ```
 
 
 # Linking Prisma and GraphQL
 
-To access Prisma in our GraphQL API we need to pass down the Photon instance to our
+To access Prisma in our GraphQL API we need to pass down the prisma instance to our
 resolvers. Apollo have a great way to do so through the `Context` object.
 
 As you saw earlier, a resolver can take at least 2 arguments:
 
-1. `parent`: The result of the resolver of the parent field (I personally never used it).
+1. `parent`: The result of the previous resolver in the middleware pipeline.
 2. `args`: the arguments of your resolver.
 
 But there is a third which is `context` (that I like to call `ctx`).
 
 As you can see [here](https://www.apollographql.com/docs/apollo-server/data/data/#context-argument),
 the `context` object is where we can store various information about the current query and our
-global connection to other services, like a database. To use our Photon instance to our resolvers
+global connection to other services, like a database. To use our prisma instance to our resolvers
 we just have to tell `ApolloServer` add it to the context:
 
 ```typescript
 // src/index.ts
-import { Photon } from '@prisma/photon';
+import { PrismaClient } from '@prisma/client';
 
-const photon = new Photon();
+const prisma = new PrismaClient();
 
 interface Context {
-  photon: Photon;
+  prisma: PrismaClient;
 }
 
 function createContext(): Context {
   return {
-    photon,
+    prisma,
   };
 }
 
@@ -254,12 +268,12 @@ Great! Now or resolvers should looks like this:
 function(parent, args, ctx)
 ```
 
-Or, if you just want your Photon instance, like this:
+Or, if you just want your prisma instance, like this:
 ```typescript
-function(parent, args, { photon })
+function(parent, args, { prisma })
 ```
 
-Now you can use your previously acquired photon knowledge to read and write from the database
+Now you can use your previously acquired prisma knowledge to read and write from the database
 in the `users` and `createUser` resolvers.
 
 To see if it works, try to create a user from your GraphQL API and see if it appeared in
@@ -305,7 +319,7 @@ const Query = queryType({
   definition(t) {
     t.list.field('users', {
       type: User,
-      resolve: (parent, args, ctx) => ctx.photon.users.findMany(),
+      resolve: (parent, args, ctx) => ctx.prisma.user.findMany(),
     });
     },
 });
@@ -376,5 +390,18 @@ The `nexus.ts` file containing the TypeScript typegen can however be added to th
 
 ## Nexus-Prisma
 
+As you see, there is a bit of redundancy between our model definition and the GraphQL API. The
+Prisma team developed a plugin to bring high level synergy between Nexus and Prisma:
+[Nexus-Prisma](https://github.com/prisma-labs/nexus-prisma).
+
+```bash
+$ npm install nexus-prisma
+```
+
+Now, go through the docs and see how you can improve the `User` Nexus type implementation with
+the `t.model` feature.
+
+Next, find a way to remove our resolvers implementation by only using `t.crud`. We should be
+able to search a user with the `users` query but only by email.
 
 ## Deploy to Heroku
