@@ -74,7 +74,7 @@ Now we will have to setup a Node.js project and to install some dependencies.
 ```bash
 $ npm init -y
 $ npm install --save-dev prisma2 typescript ts-node
-$ tsc --init --target es2018
+$ npx tsc --init --target es2018
 $ npm install --save @prisma/client
 ```
 
@@ -123,8 +123,8 @@ Time to put you at work! I want you to familiarize yourself with the Prisma Clie
 and the Prisma Language.
 
 Go through the [docs](https://github.com/prisma/prisma2/tree/master/docs)
-and find out how to add models to your `schema.prisma`. We need a User model which have
-an id (cuid string), a unique email and a password.
+and find out how to add models to your `schema.prisma`. We need to update the User model
+which have an id (cuid string), a unique email and a password.
 
 Once you wrote your model, you have to apply the changes to the database. To do so run
 the following commands:
@@ -396,6 +396,18 @@ Prisma team developed a plugin to bring high level synergy between Nexus and Pri
 
 ```bash
 $ npm install nexus-prisma
+```
+
+Add the plugin to Nexus:
+
+```typescript
+import { nexusPrismaPlugin } from 'nexus-prisma';
+
+const schema = makeSchema({
+  types: [...],
+  outputs: { ... },
+  plugins: [nexusPrismaPlugin()],
+});
 ```
 
 Now, go through the docs and see how you can improve the `User` Nexus type implementation with
