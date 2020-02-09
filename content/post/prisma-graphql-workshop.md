@@ -416,4 +416,16 @@ the `t.model` feature.
 Next, find a way to remove our resolvers implementation by only using `t.crud`. We should be
 able to search a user with the `users` query but only by email.
 
-## Deploy to Heroku
+
+# The end.
+
+We are now arriving at the end of this workshop. You should now know how to build great GraphQL
+API with TypeScript, Prisma, Apollo and Nexus. I strongly encourage you to read about the best
+practices (that I did not cover in this workshop) in the docs of the different tools we used.
+
+If you have some time left, a great exercise could be to deploy your API on
+[Heroku](https://heroku.com).
+
+Thank you for following this workshop,
+
+Gabriel Colson.
