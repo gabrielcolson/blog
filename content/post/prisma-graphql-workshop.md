@@ -17,7 +17,7 @@ Prisma is divided in 3 components:
 3. [Migrate](https://github.com/prisma/migrate): a declarative data modeling language and a migration system.
 3. [Studio](https://github.com/prisma/studio): an admin UI to support various database workflows.
 
-If you don't understand everything don't worry: you will before the end
+If you don't understand everything don't worry: you will by the end
 of this workshop!
 
 Just in case, open the [Prisma2 doc](https://github.com/prisma/prisma2/tree/master/docs),
@@ -41,7 +41,7 @@ $ node -v
 v12.14.1
 ```
 
-Nice! We're ready to start! We can now create or project with the Prisma CLI.
+Nice! We're ready to start! We can now create our project with the Prisma CLI.
 
 ````bash
 $ npx prisma2 init prisma-workshop
