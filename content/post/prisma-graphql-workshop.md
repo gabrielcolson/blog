@@ -233,8 +233,8 @@ But there is a third which is `context` (that I like to call `ctx`).
 
 As you can see [here](https://www.apollographql.com/docs/apollo-server/data/data/#context-argument),
 the `context` object is where we can store various information about the current query and our
-global connection to other services, like a database. To use our prisma instance to our resolvers
-we just have to tell `ApolloServer` add it to the context:
+global connection to other services, like a database. To use our prisma instance in our resolvers
+we just have to tell `ApolloServer` to add it to the context:
 
 ```typescript
 // src/index.ts
@@ -263,7 +263,7 @@ const server = new ApolloServer({
 // ...
 ```
 
-Great! Now or resolvers should looks like this:
+Great! Now our resolvers should look like this:
 ```typescript
 function(parent, args, ctx)
 ```
